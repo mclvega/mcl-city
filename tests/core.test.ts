@@ -210,6 +210,21 @@ describe('partida', () => {
     expect(p.fase).toBe('jugando');
   });
 
+  it('el jugador anda en las cuatro direcciones', () => {
+    for (const [x, z] of [[0, -1], [1, 0], [-1, 0], [0, 1]]) {
+      const { p } = nueva();
+      const j = p.jugador;
+      expect(p.personas).toContain(j);
+      const c = controlesVacios();
+      c.x = x;
+      c.z = z;
+      const x0 = j.cuerpo.x;
+      const z0 = j.cuerpo.z;
+      for (let n = 0; n < 60; n++) p.actualizar(PASO, c);
+      expect(Math.hypot(j.cuerpo.x - x0, j.cuerpo.z - z0)).toBeGreaterThan(1.5);
+    }
+  });
+
   it('robar un coche, conducirlo y bajarse', () => {
     const { p, g } = nueva();
     const j = p.jugador;

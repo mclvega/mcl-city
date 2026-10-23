@@ -231,9 +231,13 @@ export class Partida {
     this.rng = crearRng(semilla);
     this.hora = g.hora;
     const casa = this.ciudad.servicioCercano('casa', 30, 30);
-    // Delante de la puerta de casa, mirando a la calle (sin abrir el panel de la casa).
-    this.jugador = this.nuevaPersona('jugador', casa.x + Math.sin(casa.yaw) * 6, casa.z + Math.cos(casa.yaw) * 6, 0);
+    // Junto a la puerta de casa, mirando a la calle (sin abrir el panel ni quedar detrás de una farola).
+    const fx = Math.sin(casa.yaw);
+    const fz = Math.cos(casa.yaw);
+    this.jugador = this.nuevaPersona('jugador', casa.x + fx * 2.5 - fz * 3, casa.z + fz * 2.5 + fx * 3, 0);
     this.tiendaBloqueada = { x: casa.x, z: casa.z };
+    // El jugador también está en la lista: así le afectan la física, los golpes, los atropellos y las explosiones.
+    this.personas.push(this.jugador);
     this.jugador.vidaMax = 100;
     this.jugador.vida = 100;
     this.jugador.chaleco = g.chaleco;
@@ -1666,7 +1670,7 @@ export class Partida {
     const celda = this.ciudad.celdaEn(pos.x, pos.z);
     const dist = DISTRITOS[celda.distrito];
     const noche = luzDelDia(this.hora) < 0.35 ? 0.55 : 1;
-    const civiles = this.personas.filter((p) => p.tipo !== 'policia' && p.estado !== 'coche' && p.estado !== 'muerto').length;
+    const civiles = this.personas.filter((p) => p.tipo !== 'policia' && p.tipo !== 'jugador' && p.estado !== 'coche' && p.estado !== 'muerto').length;
     const objetivoCiv = Math.round(20 * this.densidad * dist.peatones * noche);
     if (civiles < objetivoCiv) this.aparecerPeaton(pos);
     const coches = this.vehiculos.filter((v) => !v.destruido && v.tipo !== 'patrulla').length;
